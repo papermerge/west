@@ -7,7 +7,7 @@ from websockets.asyncio.server import serve
 from west.config import get_settings
 
 
-EVENTS = "events"
+NOTIFICATIONS = "notifications"
 CONNECTIONS = {}
 settings = get_settings()
 
@@ -38,7 +38,7 @@ async def process_events():
     redis = aioredis.from_url(settings.papermerge__redis__url)
     pubsub = redis.pubsub()
 
-    await pubsub.subscribe(EVENTS)
+    await pubsub.subscribe(NOTIFICATIONS)
 
     async for message in pubsub.listen():
         if message["type"] != "message":
