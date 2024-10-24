@@ -9,7 +9,7 @@ import urllib.parse
 from websockets.asyncio.server import serve
 
 from west.config import get_settings
-from west.utils import setup_logging
+from west import utils
 
 
 logger = logging.getLogger(__name__)
@@ -20,14 +20,16 @@ CONNECTIONS = {}
 settings = get_settings()
 
 if settings.papermerge__main__logging_cfg:
-    setup_logging(settings.papermerge__main__logging_cfg)
+    utils.setup_logging(settings.papermerge__main__logging_cfg)
 
-def get_query_param(path, key):
+def get_query_param(path, key) -> str | None:
     query = urllib.parse.urlparse(path).query
     params = urllib.parse.parse_qs(query)
     values = params.get(key, [])
     if len(values) == 1:
         return values[0]
+
+    return None
 
 async def handler(websocket):
     try:
@@ -46,12 +48,22 @@ async def handler(websocket):
         else:
             logger.debug(f"user_id={user_id} not found in CONNECTIONS")
 
-async def remove_user_auth(connection, request):
-    # extract user ID from "Remote-User" header
-    # or from JWT token in Authorization header
+async def extract_user_id(connection, request):
+    """Extract user_id either from `remote-user-id` or from `token` param"""
+
+    # extract user ID from "remote-user-id" query parameter
     user_id = get_query_param(request.path, "remote-user-id")
     if user_id and isinstance(user_id, str):
-        connection.user_id = uuid.UUID(user_id)
+        connection.user_id = user_id
+
+    # i.e. jwt token
+    token = get_query_param(request.path, "token")
+    if '.' in token:
+        _, payload, _ = token.split('.')
+        data = utils.decode(payload)
+        user_id: str = data.get("sub")
+        if user_id and isinstance(user_id, str):
+            connection.user_id = user_id
 
 
 async def process_events():
@@ -70,7 +82,7 @@ async def process_events():
         event = json.loads(payload)
 
         for user_id, websocket in CONNECTIONS.items():
-            if event['payload']["user_id"] == str(user_id):
+            if event['payload']["user_id"] == user_id:
                 data = json.dumps(event)
                 logger.debug(f"Sending data to client {data}")
                 await websocket.send(data)
@@ -80,7 +92,7 @@ async def main(port: int):
     logger.info(f"Listening on local port {port}")
 
     try:
-        async with serve(handler, "", port, process_request=remove_user_auth):
+        async with serve(handler, "", port, process_request=extract_user_id):
             await process_events()  # runs forever
     except ConnectionError as ex:
         logger.critical(f'{ex} Bye.')
