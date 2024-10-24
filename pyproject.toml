@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "west"
 version = "0.1.0"
-description = ""
+description = "Send notifications to client side via websockets"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 readme = "README.md"
 
@@ -12,8 +12,15 @@ pydantic = "^2.9.2"
 pydantic-settings = "^2.6.0"
 setuptools = "^75.2.0"
 redis = "^5.1.1"
+typer = "^0.12.5"
+pyyaml = "^6.0.2"
+
+[tool.taskipy.tasks]
+worker = "python west/main.py"
 
 
+[tool.poetry.group.dev.dependencies]
+taskipy = "^1.14.0"
 
 [build-system]
 requires = ["poetry-core"]
