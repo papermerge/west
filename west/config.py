@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     user_id_param_name: UserIDParamName = UserIDParamName.token
     public_key: Path | None = None  # path to public key file; used to validate jwt tokens
     algorithms: list[Algs] = ['RS256']
+    health_check_path: str = "/probe"
 
 
 @lru_cache()

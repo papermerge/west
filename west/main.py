@@ -52,9 +52,9 @@ async def handler(websocket):
             logger.debug(f"user_id={user_id} not found in CONNECTIONS")
 
 
-async def extract_user_id(connection, request):
-    """Extract user_id either from `remote-user-id` or from `token` param
-    """
+async def process_request(connection, request):
+    if request.path == settings.health_check_path:
+        return connection.respond(HTTPStatus.OK, b"OK\n")
 
     # extract user ID from "remote-user-id" query parameter
     if settings.user_id_param_name == UserIDParamName.remote_user_id:
@@ -105,7 +105,7 @@ async def main(port: int):
     logger.info(f"Listening on local port {port}")
 
     try:
-        async with serve(handler, "", port, process_request=extract_user_id):
+        async with serve(handler, "", port, process_request=process_request):
             await process_events()  # runs forever
     except ConnectionError as ex:
         logger.critical(f'{ex} Bye.')
