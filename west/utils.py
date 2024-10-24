@@ -1,10 +1,15 @@
+import logging
 import yaml
 import base64
 import json
 from pathlib import Path
 from logging.config import dictConfig
 from collections.abc import Mapping
+from west.config import get_settings
+from jose import jwt
 
+logger = logging.getLogger(__name__)
+settings = get_settings()
 
 def setup_logging(config: Path | None):
     if config is None:
@@ -46,3 +51,32 @@ def decode(s: str) -> Mapping:
 
     json_str = base64.b64decode(s).decode()
     return json.loads(json_str)
+
+try:
+    public_cert = open(settings.public_key, 'r').read()
+except Exception:
+    public_cert = None
+
+
+def token_is_valid(token: str) -> bool:
+    if public_cert is None:
+        logger.error(f"Missing public key certificate: {settings.public_key}")
+        return False
+
+    try:
+        jwt.decode(
+            token,
+            public_cert,
+            algorithms=settings.algorithms,
+            options={
+                'verify_aud': False,
+                'verify_iss': False,
+                'verify_sub': False,
+                'verify_jti': False,
+            }
+        )
+    except Exception as e:
+        logger.debug(e)
+        return False
+
+    return True
