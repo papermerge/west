@@ -5,6 +5,7 @@ from redis import asyncio as aioredis
 from redis.exceptions import ConnectionError
 import json
 import urllib.parse
+from http import HTTPStatus
 from websockets.asyncio.server import serve
 
 from west.config import get_settings, UserIDParamName
@@ -54,7 +55,7 @@ async def handler(websocket):
 
 async def process_request(connection, request):
     if request.path == settings.health_check_path:
-        return connection.respond(HTTPStatus.OK, b"OK\n")
+        return connection.respond(HTTPStatus.OK, "OK")
 
     # extract user ID from "remote-user-id" query parameter
     if settings.user_id_param_name == UserIDParamName.remote_user_id:

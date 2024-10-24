@@ -14,10 +14,11 @@ setuptools = "^75.2.0"
 redis = "^5.1.1"
 typer = "^0.12.5"
 pyyaml = "^6.0.2"
-jose = "^1.0.0"
+pyjwt = "^2.9.0"
 
 [tool.taskipy.tasks]
 server = "python west/main.py"
+settings = "python west/cli/main.py"
 
 
 [tool.poetry.group.dev.dependencies]

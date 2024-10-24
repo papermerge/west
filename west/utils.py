@@ -6,7 +6,7 @@ from pathlib import Path
 from logging.config import dictConfig
 from collections.abc import Mapping
 from west.config import get_settings
-from jose import jwt
+import jwt
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
