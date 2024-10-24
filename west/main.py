@@ -13,7 +13,6 @@ from west import utils
 
 
 logger = logging.getLogger(__name__)
-app = typer.Typer()
 
 CHANNEL = "notifications"
 CONNECTIONS = {}
@@ -106,16 +105,17 @@ async def main(port: int):
     logger.info(f"Listening on local port {port}")
 
     try:
-        async with serve(handler, "", port, process_request=process_request):
+        async with serve(handler, "localhost", port, process_request=process_request):
             await process_events()  # runs forever
     except ConnectionError as ex:
         logger.critical(f'{ex} Bye.')
+    except Exception as ex:
+        logger.critical(f'{ex} Bye.')
 
 
-@app.command()
 def entrypoint(port: int = 8001):
     asyncio.run(main(port))
 
 
 if __name__ == "__main__":
-    entrypoint()
+    typer.run(entrypoint)
