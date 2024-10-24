@@ -3,7 +3,6 @@ import typer
 import asyncio
 from redis import asyncio as aioredis
 from redis.exceptions import ConnectionError
-import uuid
 import json
 import urllib.parse
 from websockets.asyncio.server import serve
@@ -22,6 +21,7 @@ settings = get_settings()
 if settings.papermerge__main__logging_cfg:
     utils.setup_logging(settings.papermerge__main__logging_cfg)
 
+
 def get_query_param(path, key) -> str | None:
     query = urllib.parse.urlparse(path).query
     params = urllib.parse.parse_qs(query)
@@ -30,6 +30,7 @@ def get_query_param(path, key) -> str | None:
         return values[0]
 
     return None
+
 
 async def handler(websocket):
     try:
@@ -47,6 +48,7 @@ async def handler(websocket):
             del CONNECTIONS[user_id]
         else:
             logger.debug(f"user_id={user_id} not found in CONNECTIONS")
+
 
 async def extract_user_id(connection, request):
     """Extract user_id either from `remote-user-id` or from `token` param"""
