@@ -53,23 +53,33 @@ async def handler(websocket):
 
 
 async def process_request(connection, request):
+    logger.debug("processing request")
     if request.path == settings.health_check_path:
+        logger.debug("Heath check")
         return connection.respond(HTTPStatus.OK, "OK")
 
     # extract user ID from "remote-user-id" query parameter
     if settings.user_id_param_name == UserIDParamName.remote_user_id:
         # remote-user-id is not validated!
+        logger.debug("Checking remote-user-id url param")
         user_id = get_query_param(request.path, "remote-user-id")
         if user_id and isinstance(user_id, str):
             connection.user_id = user_id
 
     if settings.user_id_param_name == UserIDParamName.token:
+        logger.debug("Checking token url param")
         # i.e. jwt token
         token = get_query_param(request.path, "token")
+
+        if not token:
+            logger.info("token missing")
+            return
+
         if not utils.token_is_valid(token):
             logger.info(f"Invalid token={token}")
             return
 
+        logger.debug("Valid token found")
         # i.e. valid jwt token
         if '.' in token:
             _, payload, _ = token.split('.')
