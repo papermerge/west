@@ -101,11 +101,11 @@ async def process_events():
                 await websocket.send(data)
 
 
-async def main(port: int):
-    logger.info(f"Listening on local port {port}")
+async def main(port: int, host: str):
+    logger.info(f"Listening on {host}:{port}")
 
     try:
-        async with serve(handler, "localhost", port, process_request=process_request):
+        async with serve(handler, host, port, process_request=process_request):
             await process_events()  # runs forever
     except ConnectionError as ex:
         logger.critical(f'{ex} Bye.')
@@ -113,8 +113,8 @@ async def main(port: int):
         logger.critical(f'{ex} Bye.')
 
 
-def entrypoint(port: int = 8001):
-    asyncio.run(main(port))
+def entrypoint(port: int = 8001, host: str = "0.0.0.0"):
+    asyncio.run(main(port, host))
 
 
 if __name__ == "__main__":
